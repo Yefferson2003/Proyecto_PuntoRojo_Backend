@@ -1,0 +1,15 @@
+# Node modules
+node_modules/
+
+# Archivos de configuración
+.env
+
+# Archivos de bloqueo de paquetes
+package-lock.json
+
+# Archivos de configuración de TypeScript
+tsconfig.json
+
+# Otros archivos que deseas ignorar
+*.log
+dist/
