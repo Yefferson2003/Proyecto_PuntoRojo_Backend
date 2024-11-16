@@ -15,6 +15,13 @@ class DeliveryMan extends Model{
     })
     availability: boolean
 
+    @Default('active')
+    @Column({
+        type: DataType.ENUM('active', 'inactive'),
+        allowNull: true
+    })
+    status: string
+
     @Column({
         type: DataType.STRING(10),
         allowNull: false

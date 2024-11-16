@@ -2,8 +2,11 @@ import {  Router } from "express";
 import { deliveryManController } from "../controllers/deliveryManController";
 import { body, param, query } from "express-validator";
 import { handleInputErrors, validateDeliveryManId } from "../middlewares/validation";
+import { authenticate } from "../middlewares/auth";
 
 const router = Router()
+
+router.use(authenticate)
 
 router.get('/',
     deliveryManController.getDeliveryMen
@@ -39,6 +42,12 @@ router.post('/',
         .isEmail().withMessage('Email no válido'),
     handleInputErrors,
     deliveryManController.createDeliveryMan
+)
+
+router.patch('/:deliveryManId/status',
+    validateDeliveryManId,
+    handleInputErrors,
+    deliveryManController.changeStatusDeliveryMan
 )
 
 export default router

@@ -3,16 +3,17 @@ import Order from '../models/order.model'
 import OrderDetails from '../models/orderDetails.model.'
 import Product from '../models/product.model'
 import Customer from '../models/customer.model'
-import { Op } from 'sequelize'
+import { Op, or } from 'sequelize'
 import User from '../models/user.model'
 import DeliveryMan from '../models/deliveryMan.model'
+
 
 function filterOrdersFromLastTwoDaysCondition() {
     const today = new Date();
     today.setHours(0, 0, 0, 0); 
 
     const endOfToday = new Date(today);
-    endOfToday.setHours(23, 59, 59, 999); 
+    endOfToday.setHours(23, 59, 59, 999) 
 
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1); 
@@ -181,6 +182,9 @@ export class orderController {
                     })
                 })
                 await Promise.all(orderDetailsPromises);
+
+                req.app.get('io').emit('newOrder');
+
                 res.send('Orden creada correctamente')
             }else{
                 const error = new Error('Acción no valida')
@@ -206,6 +210,7 @@ export class orderController {
                         productId: productIds, 
                     },
                 });
+                req.app.get('io').emit('changeOrder');  // webSocket
                 res.json('Pedido actualizado correctamente')
             }
             const error = new Error('Acción no valida')
@@ -220,17 +225,16 @@ export class orderController {
         try {
             if (req.user && !req.customer && !req.deliveryMan) {
 
-
                 if (req.order.dataValues.deliveryManId === deliveryManId) {
                     const error = new Error('El Repartidor ya fue asignado')
                     res.status(409).json({error: error.message})
                     return
                 }
 
-
                 await req.order.update({
                     deliveryManId
                 })
+                req.app.get('io').emit('changeOrder'); // webSocket
                 res.json('Repartidor asignado correctamente')
                 return
             }
@@ -253,8 +257,8 @@ export class orderController {
                 await req.order.update({
                     status
                 })
-
             }
+            req.app.get('io').emit('changeOrder');  // webSocket
             res.send('Estado actualizado correctamente')
         } catch (error) {
             res.status(500).json({error: 'Hubo un Error'})

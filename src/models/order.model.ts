@@ -33,7 +33,7 @@ class Order extends Model {
     address: string
 
     @Column({
-        type: DataType.STRING(300)
+        type: DataType.TEXT
     })
     request: string
 

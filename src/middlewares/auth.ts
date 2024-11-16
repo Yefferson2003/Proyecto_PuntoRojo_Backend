@@ -67,6 +67,13 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             })
 
             if (deliveryMan) {
+
+                 // Verificar si el repartidor está "inactivo"
+                if (deliveryMan.status === 'inactive') {
+                    res.status(403).json({ error: 'Acceso denegado. Cuenta inactiva.' });
+                    return;
+                }
+
                 req.deliveryMan = deliveryMan
             }
             next()

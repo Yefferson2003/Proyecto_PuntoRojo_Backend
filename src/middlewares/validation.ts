@@ -47,11 +47,16 @@ export const validateDeliveryManId = [
     param('deliveryManId')
         .isInt().withMessage('Id no válido'),
     (req: Request, res: Response, next: NextFunction) => {
-        next(); // Si no hay errores de validación, pasamos al siguiente middleware
+        next(); 
     }
 ]
-
-
+export const validateMessageId = [
+    param('messageId')
+        .isInt().withMessage('Id no válido'),
+    (req: Request, res: Response, next: NextFunction) => {
+        next(); 
+    }
+]
 
 export const validateBodyProduct = [
     body('name')

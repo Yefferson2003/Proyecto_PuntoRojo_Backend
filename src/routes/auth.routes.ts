@@ -28,7 +28,7 @@ router.post('/create-accouth/customer',
         .isIn(clientType).withMessage('Tipo de cliente invalido'),
     body('identification')
         .notEmpty().withMessage('Número de identificación obligatorio'),
-        body('phone')
+    body('phone')
         .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
         .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
     body('address')
@@ -95,5 +95,44 @@ router.get('/user',
     authenticate,
     authController.user
 )
+router.put('/customer/update',
+    authenticate,
+    body('name')
+        .notEmpty().withMessage('El nombre es obligatorio'),
+    body('clietType')
+        .isIn(clientType).withMessage('Tipo de cliente invalido'),
+    body('identification')
+        .notEmpty().withMessage('La identificación es obligatoria'),
+    body('phone')
+        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
+        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
+    body('address')
+        .notEmpty().withMessage('La dirección es obligatoria'),
+    handleInputErrors,
+    authController.updateCustomer
+)
 
+router.post('/validate-password',
+    authenticate,
+    body('password')
+    .notEmpty().withMessage('El password es obligatorio'),
+    handleInputErrors,
+    authController.validatePassword
+)
+
+router.post('/update-password',
+    authenticate,
+    body('password')
+        .isLength({min: 8}).withMessage('El password es muy corto, minimo 8 caracteres'),
+    body('password_confirmation')
+        .custom((value, {req}) => {
+            if (value !== req.body.password) {
+                throw new Error("Los password no son iguales");
+                
+            }
+            return true
+        }),
+    handleInputErrors,
+    authController.updatePasswordAccount
+)
 export default router

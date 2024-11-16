@@ -3,6 +3,7 @@ import Category from "../models/category.model";
 import SubCategory from "../models/subcategory.model";
 import Product from "../models/product.model";
 import Order from "../models/order.model";
+import Message from "../models/message.model";
 
 declare global { 
     namespace Express {
@@ -11,11 +12,12 @@ declare global {
             subCategory: SubCategory
             product: Product
             order: Order
+            message: Message
         }
     }
 }
 
-const elementExists = function (res:Response, model: Category | SubCategory | Product | Order ) {
+const elementExists = function (res:Response, model: Category | SubCategory | Product | Order | Message) {
     if (!model) {
         const error = new Error('Elemento no Encontrado')
         res.status(404).json({error: error.message})
@@ -71,6 +73,17 @@ export async function orderExists(req:Request, res:Response, next:NextFunction) 
         const order = await Order.findByPk(orderId)
         if (!elementExists(res, order)) return
         req.order = order
+        next()
+    } catch (error) {
+        res.status(500).json({error: 'Hubo un Error - models'})
+    }
+}
+export async function messageExists(req:Request, res:Response, next:NextFunction) {
+    const {messageId} = req.params
+    try {
+        const message = await Message.findByPk(messageId)
+        if (!elementExists(res, message)) return
+        req.message = message
         next()
     } catch (error) {
         res.status(500).json({error: 'Hubo un Error - models'})

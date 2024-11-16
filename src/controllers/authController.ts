@@ -6,6 +6,7 @@ import User from '../models/user.model'
 import { checkPassword, hashPassword } from '../utils/auth'
 import { generateToken } from '../utils/token'
 import { generateJWT } from '../utils/jwt'
+import DeliveryMan from '../models/deliveryMan.model'
 
 export class authController {
     static createAccountCustomer = async (req : Request,  res : Response) => {
@@ -123,6 +124,16 @@ export class authController {
                     }
                 }]
             })
+
+            const deliveryManExist = await DeliveryMan.findOne({
+                include: [{
+                    model: User,
+                    as: 'user',
+                    where: {
+                        id: user.id
+                    }
+                }]
+            })
             
             if (customerExist && !customerExist.dataValues.confirmed) {
 
@@ -142,6 +153,12 @@ export class authController {
 
                 const error = new Error('La cuenta no ha sido confirmada, hemos enviado un email')
                 res.status(401).json({error: error.message})
+                return
+            }
+
+            if (deliveryManExist && deliveryManExist.dataValues.status !== 'active') {
+                const error = new Error('Cuenta desabilitada')
+                res.status(403).json({error: error.message})
                 return
             }
 
@@ -299,19 +316,103 @@ export class authController {
     }
 
     static user = async (req : Request,  res : Response) => {
-        if (req.user && !req.customer &&  !req.deliveryMan) {
-            const admin = {
-                user: req.user
+        try {
+            if (req.user && !req.customer &&  !req.deliveryMan) {
+                const admin = {
+                    user: req.user
+                }
+                res.json(admin)
             }
-            res.json(admin)
-        }
-
-        if (req.customer) {
-            res.json(req.customer)
-        }
-        
-        if (req.deliveryMan) {
-            res.json(req.deliveryMan)
+    
+            if (req.customer) {
+                res.json(req.customer)
+            }
+            
+            if (req.deliveryMan) {
+                res.json(req.deliveryMan)
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
         }
     }
+
+    static updateCustomer = async (req : Request,  res : Response) => {
+        const {name, clietType, identification, phone, address} = req.body
+        try {
+            if (!req.customer && !req.user) {
+                const error =  new Error('Usuario no valido')
+                res.status(409).json({error: error.message})
+                return
+            }
+
+            await req.user.update({
+                name
+            })
+
+            await req.customer.update({
+                clietType, 
+                identification, 
+                phone, 
+                address
+            })
+
+            res.send('Usuario actualizado correctamente')
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
+    static validatePassword = async (req : Request,  res : Response) => {
+        const {password} = req.body
+        try {
+
+            if (!req.user && !req.customer) {
+                const error =  new Error('Usuario no valido')
+                res.status(409).json({error: error.message})
+                return
+            }
+
+            const isPasswordCorrect = await checkPassword(password, req.user.dataValues.password)
+            
+            if (!isPasswordCorrect) {
+                const error = new Error('Password incorrecta')
+                res.status(401).json({error: error.message})
+                return
+            }
+
+            res.send('La contraseña es valida, Define una nueva contraseña ')
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
+    static updatePasswordAccount = async (req : Request,  res : Response) => {
+        const {password} = req.body
+        try {
+
+            if (!req.user && !req.customer) {
+                const error =  new Error('Usuario no valido')
+                res.status(409).json({error: error.message})
+                return
+            }
+            
+            // Hash Password
+            const hashedPassword = await hashPassword(password)
+            
+
+            await req.user.update({
+                password: hashedPassword
+            })
+
+            res.send('La contraseña se modificó correctamente')
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
 }
