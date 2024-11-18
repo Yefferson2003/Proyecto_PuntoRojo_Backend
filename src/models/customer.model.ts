@@ -58,7 +58,6 @@ class Customer extends Model {
     @HasMany(() => Order)
     orders: Order[]
 
-    // Relación: Customer tiene una Review
     @HasOne(() => Review)
     review: Review
 

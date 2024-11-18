@@ -19,4 +19,9 @@ router.get('/orders/:orderId',
     customerController.getOrdersByCustomerById
 )
 
+
+router.get('/',
+    authenticate,
+    customerController.getCustomers
+)
 export default router

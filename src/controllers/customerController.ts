@@ -5,6 +5,9 @@ import DeliveryMan from '../models/deliveryMan.model';
 import User from '../models/user.model';
 import OrderDetails from '../models/orderDetails.model.';
 import Product from '../models/product.model';
+import Customer from '../models/customer.model';
+import Review from '../models/review.model';
+import { createSearchFilter } from '../utils';
 
 function filterOrdersFromLastTwoDaysCondition() {
     const today = new Date();
@@ -118,7 +121,6 @@ export class customerController {
                             {
                                 model: Product,
                                 as: 'product',
-                                attributes: ['id', 'priceAfter', 'name', 'imgUrl', 'iva']
                             }
                         ]
                     }
@@ -128,7 +130,57 @@ export class customerController {
             res.json(order)
         } catch (error) {
             console.log(error);
-            
+            res.status(500).json({error: 'Hubo un Error'})
+        }
+    }
+
+    static getCustomers = async (req:Request, res:Response) => {
+        const { page = 1, limit = 10, search} = req.query
+        try {
+            if (req.user && !req.customer && !req.deliveryMan) {
+
+                let customerFilter = {}
+
+                if (typeof search === 'string') {
+                    customerFilter = createSearchFilter(search, ['identification']);
+                } 
+
+                // Convertir a números y definir `offset` y `limit`
+                const pageNumber = parseInt(page as string);
+                const limitNumber = parseInt(limit as string);
+                const offset = (pageNumber - 1) * limitNumber;
+
+                const {count, rows: customers} = await Customer.findAndCountAll({
+                    where: customerFilter,
+                    include: [
+                        {
+                            model: Review,
+                            as: 'review'
+                        },
+                        {
+                            model: User,
+                            as: 'user',
+                            attributes: { exclude: ['password'] },
+                        }
+                    ],
+                    order: [['id', 'DESC']],
+                    limit: limitNumber,
+                    offset,
+                })
+
+                res.json({
+                    total: count,
+                    customers,
+                    totalPages: Math.ceil(count / limitNumber),
+                    currentPage: pageNumber,
+                });
+
+                return
+            }
+            const error = new Error('Usuario no valido');
+            res.status(409).json({error: error.message})
+        } catch (error) {
+            console.log(error);
             res.status(500).json({error: 'Hubo un Error'})
         }
     }

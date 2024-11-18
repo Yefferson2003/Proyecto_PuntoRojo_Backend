@@ -6,6 +6,7 @@ import orderRoutes from './order.routes'
 import deliveryManRoutes from './deliveryMan.routes'
 import customerRoutes from './customer.routes'
 import messageRoutes from './message.routes'
+import reviwRoutes from './review.routes'
 
 const router = Router()
 
@@ -16,5 +17,6 @@ router.use('/orders', orderRoutes)
 router.use('/deliveryMan', deliveryManRoutes)
 router.use('/customer', customerRoutes)
 router.use('/messages', messageRoutes)
+router.use('/review', reviwRoutes)
 
 export default router

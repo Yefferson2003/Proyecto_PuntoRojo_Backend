@@ -65,9 +65,11 @@ export const validateBodyProduct = [
         .notEmpty().withMessage('Nit obligatorio para producto')
         .isLength({ max: 15 }).withMessage('El Nit no debe exceder los 15 caracteres'),
     body('priceAfter')
-        .isFloat().withMessage('dato númerico obligatorio para producto'),
+        .isFloat().withMessage('Dato númerico obligatorio para producto'),
     body('priceBefore')
-        .isFloat().withMessage('dato númerico obligatorio para producto'),
+        .isFloat().withMessage('Dato númerico obligatorio para producto'),
     body('subCategoryId')
-        .isFloat().withMessage('dato númerico obligatorio para producto'),
+        .isFloat().withMessage('Dato númerico obligatorio para producto'),
+    body('iva')
+        .isInt({min: 0, max: 100}).withMessage('Valor no Valido'),
 ]

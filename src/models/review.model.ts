@@ -8,14 +8,22 @@ import Customer from "./customer.model";
 class Review extends Model {
 
     @Column({
-        type: DataType.STRING(100),
+        type: DataType.TEXT,
         allowNull: false
     })
     description: string
-    
+
+    @Default(false)
+    @Column({
+        type: DataType.BOOLEAN,
+        allowNull: true
+    })
+    visibility: boolean
+
+    @Default(0.0)
     @Column({
         type: DataType.INTEGER,
-        allowNull: false
+        allowNull: false,
     })
     qualification: number
 
@@ -23,7 +31,8 @@ class Review extends Model {
     @ForeignKey(() => Customer)
     @Column({
         type: DataType.INTEGER,
-        allowNull: false
+        allowNull: false,
+        unique: true
     })
     customerId: number
 

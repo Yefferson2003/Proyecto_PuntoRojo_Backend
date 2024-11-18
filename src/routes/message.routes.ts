@@ -7,11 +7,12 @@ import { handleInputErrors, validateMessageId } from "../middlewares/validation"
 
 const router = Router()
 
-router.use(authenticate)
 
 router.get('/',
     messageController.getMessages
 )
+
+router.use(authenticate)
 
 router.get('/:messageId',
     validateMessageId,

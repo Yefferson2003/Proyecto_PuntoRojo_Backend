@@ -35,7 +35,7 @@ export class authController {
                 name,
                 rol
             })
-
+            
             const customer = await Customer.create({
                 clietType,
                 identification,
