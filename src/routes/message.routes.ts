@@ -7,6 +7,23 @@ import { handleInputErrors, validateMessageId } from "../middlewares/validation"
 
 const router = Router()
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Message:
+ *       type: object
+ *       properties:
+ *         visibility:
+ *           type: boolean
+ *           description: Visibilidad del mensaje
+ *           example: false
+ *         message:
+ *           type: string
+ *           description: Contenido del mensaje
+ *           example: "Este es un mensaje de ejemplo."
+ */
+
 
 router.get('/',
     messageController.getMessages

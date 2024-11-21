@@ -13,7 +13,14 @@ class DeliveryMan extends Model{
         type: DataType.BOOLEAN,
         allowNull: true
     })
+
     availability: boolean
+    
+    @Column({
+        type: DataType.STRING(100),
+        allowNull: true
+    })
+    identification: string
 
     @Default('active')
     @Column({

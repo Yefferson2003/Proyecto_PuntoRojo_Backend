@@ -8,6 +8,141 @@ const clientType = ['natural', 'legal']
 
 const router = Router()
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email del usuario, único y en minúsculas
+ *           example: "usuario@example.com"
+ *         password:
+ *           type: string
+ *           description: Contraseña del usuario
+ *           example: "passwordSeguro123"
+ *         name:
+ *           type: string
+ *           description: Nombre del usuario
+ *           example: "Juan Pérez"
+ *         rol:
+ *           type: string
+ *           enum:
+ *             - admin
+ *             - user
+ *             - deliveryman
+ *           description: Rol del usuario
+ *           example: "user"
+ *         customer:
+ *           $ref: '#/components/schemas/Customer'
+ *           description: Relación con el modelo Customer
+ *         deliveryMan:
+ *           $ref: '#/components/schemas/DeliveryMan'
+ *           description: Relación con el modelo DeliveryMan
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Token:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: Token de autenticación
+ *           example: "dGhpcyBpcyBhIHNhbXBsZSB0b2tlbg=="
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación del token
+ *           example: "2024-11-19T23:54:00.000Z"
+ *         expiresAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de expiración del token
+ *           example: "2024-11-20T23:54:00.000Z"
+ *         customerId:
+ *           type: integer
+ *           description: ID del cliente asociado
+ *           example: 1
+ *         customer:
+ *           $ref: '#/components/schemas/Customer'
+ *           description: Relación con el modelo Customer
+ */
+
+
+/**
+ * @swagger
+ * /api/auth/create-accouth/customer:
+ *   post:
+ *     summary: Crea una nueva cuenta de cliente
+ *     tags: 
+ *       - Autenticación
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Juan Pérez"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *               password_confirmation:
+ *                 type: string
+ *                 example: "password123"
+ *               email:
+ *                 type: string
+ *                 example: "juan.perez@example.com"
+ *               clietType:
+ *                 type: string
+ *                 example: "natural"
+ *               identification:
+ *                 type: string
+ *                 example: "123456789"
+ *               phone:
+ *                 type: string
+ *                 example: "3101234567"
+ *               address:
+ *                 type: string
+ *                 example: "Calle Falsa 123"
+ *     responses:
+ *       200:
+ *         description: Cuenta creada, revisa tu email para confirmarla
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'Cuenta creada, revisa tu email para confirmarla'
+ *       409:
+ *         description: El usuario ya está registrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Cuenta deshabilitada'
+ *       500:
+ *         description: Hubo un error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Error interno'
+ */
+
 router.post('/create-accouth/customer', 
     body('name')
         .notEmpty().withMessage('El Nombre es obligatorio'),
@@ -36,6 +171,64 @@ router.post('/create-accouth/customer',
     handleInputErrors,
     authController.createAccountCustomer
 )
+/**
+ * @swagger
+ * /api/auth/confirm-accounth/customer:
+ *   post:
+ *     summary: Confirma una cuenta de cliente
+ *     tags: 
+ *       - Autenticación
+ *     description: Confirma una cuenta de cliente verificando el token de confirmación. Este endpoint se usa después de que un cliente se registra para activar su cuenta.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: El token de confirmación.
+ *                 example: "abc123def456"
+ *     responses:
+ *       200:
+ *         description: Cuenta confirmada correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'Cuenta confirmada correctamente'
+ *       401:
+ *         description: Token no válido.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Token no válido'
+ *       404:
+ *         description: Cliente no encontrado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Cliente no encontrado'
+ *       500:
+ *         description: Hubo un error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Error interno'
+ */
 
 router.post('/confirm-accounth/customer',
     body('token')
@@ -43,6 +236,67 @@ router.post('/confirm-accounth/customer',
     handleInputErrors,
     authController.confirmAccountCustomer
 )
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login de usuario
+ *     description: Permite a un usuario loguearse usando su correo electrónico y contraseña.
+ *     tags: [Autenticación]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: El correo electrónico del usuario.
+ *                 example: usuario@ejemplo.com
+ *               password:
+ *                 type: string
+ *                 description: La contraseña del usuario.
+ *                 example: 'contraseñaSegura123'
+ *     responses:
+ *       200:
+ *         description: El token JWT generado para el usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+ *       401:
+ *         description: Error de autenticación, usuario no encontrado o cuenta no confirmada.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Usuario no Encontrado'
+ *       403:
+ *         description: Error de autenticación, cuenta deshabilitada.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Cuenta deshabilitada'
+ *       500:
+ *         description: Error interno del servidor.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Error interno'
+ */
 
 router.post('/login',
     body('email')
@@ -59,6 +313,54 @@ router.post('/resquest-code',
     handleInputErrors,
     authController.requestConfirmationCode
 )
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Solicita restablecimiento de contraseña
+ *     tags: 
+ *       - Autenticación
+ *     description: Envia un correo electrónico con instrucciones para restablecer la contraseña del usuario. Este endpoint verifica si el usuario existe y genera un token de restablecimiento de contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: El correo electrónico del usuario registrado.
+ *                 example: "usuario@example.com"
+ *     responses:
+ *       200:
+ *         description: Revisa tu email para instrucciones.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'Revisa tu email para instrucciones'
+ *       401:
+ *         description: Usuario no encontrado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Usuario no encontrado'
+ *       500:
+ *         description: Hubo un error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Hubo un error'
+ */
 
 router.post('/forgot-password',
     body('email')
@@ -66,6 +368,54 @@ router.post('/forgot-password',
     handleInputErrors,
     authController.forgotPassword
 )
+/**
+ * @swagger
+ * /api/auth/validate-token:
+ *   post:
+ *     summary: Valida el token de restablecimiento de contraseña
+ *     tags: 
+ *       - Autenticación
+ *     description: Valida el token enviado al correo electrónico del usuario para restablecer la contraseña. Este endpoint verifica si el token es válido.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: El token de restablecimiento de contraseña.
+ *                 example: "abc123def456"
+ *     responses:
+ *       200:
+ *         description: El token es valido, Define una nueva contraseña.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'El token es valido, Define una nueva contraseña'
+ *       401:
+ *         description: Token no válido.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Token no válido'
+ *       500:
+ *         description: Hubo un error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Hubo un error'
+ */
 
 router.post('/validate-token',
     body('token')
@@ -73,6 +423,65 @@ router.post('/validate-token',
     handleInputErrors,
     authController.validateToken
 )
+/**
+ * @swagger
+ * /api/auth/update-password/{token}:
+ *   post:
+ *     summary: Actualiza la contraseña del usuario
+ *     tags: 
+ *       - Autenticación
+ *     description: Actualiza la contraseña del usuario utilizando un token de restablecimiento de contraseña. Este endpoint verifica el token y permite definir una nueva contraseña.
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: El token de restablecimiento de contraseña
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 description: La nueva contraseña del usuario.
+ *                 example: "nuevoPassword123"
+ *               password_confirmation:
+ *                 type: string
+ *                 description: Confirmación de la nueva contraseña del usuario.
+ *                 example: "nuevoPassword123"
+ *     responses:
+ *       200:
+ *         description: La contraseña se modificó correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: 'La contraseña se modificó correctamente'
+ *       401:
+ *         description: Token no válido.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Token no válido'
+ *       500:
+ *         description: Hubo un error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 'Hubo un error'
+ */
 
 router.post('/update-password/:token',
     param('token')

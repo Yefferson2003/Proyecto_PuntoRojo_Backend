@@ -82,19 +82,24 @@ export class productController {
     static createProduct = async (req:Request, res:Response) => {
             const { name, nit, description, imgUrl, availability, priceAfter, priceBefore, iva, offer, subCategoryId} = req.body
         try {
-            const product = Product.create({
-                name, 
-                nit, 
-                description, 
-                imgUrl, 
-                availability, 
-                priceAfter, 
-                priceBefore, 
-                iva, 
-                offer, 
-                subCategoryId
-            })
-            res.send('Producto creado correctamente')
+            if (req.user && !req.customer && !req.deliveryMan) {
+                const product = Product.create({
+                    name, 
+                    nit, 
+                    description, 
+                    imgUrl, 
+                    availability, 
+                    priceAfter, 
+                    priceBefore, 
+                    iva, 
+                    offer, 
+                    subCategoryId
+                })
+                res.status(201).send('Producto creado correctamente')
+                return
+            }
+            const error = new Error('Usuario no valido');
+            res.status(409).json({error: error.message})
         } catch (error) {
             res.status(500).json({error: 'Hubo un Error'})
         }
@@ -103,19 +108,24 @@ export class productController {
     static updateProduct = async (req:Request, res:Response) => {
         const { name, nit, description, imgUrl, availability, priceAfter, priceBefore, iva, offer, subCategoryId} = req.body
         try {
-            await req.product.update({
-                name, 
-                nit, 
-                description, 
-                imgUrl, 
-                availability, 
-                priceAfter, 
-                priceBefore, 
-                iva, 
-                offer, 
-                subCategoryId
-            })
-            res.send('Producto actualizado correctamente')
+            if (req.user && !req.customer && !req.deliveryMan) {
+                await req.product.update({
+                    name, 
+                    nit, 
+                    description, 
+                    imgUrl, 
+                    availability, 
+                    priceAfter, 
+                    priceBefore, 
+                    iva, 
+                    offer, 
+                    subCategoryId
+                })
+                res.send('Producto actualizado correctamente')
+                return
+            }
+            const error = new Error('Usuario no valido');
+            res.status(409).json({error: error.message})
         } catch (error) {
             res.status(500).json({error: 'Hubo un Error'})         
         }
@@ -124,10 +134,15 @@ export class productController {
     static changeAvailabilityProduct = async (req:Request, res:Response) => {
         const newAvailability = !req.product.dataValues.availability; // Cambiar la disponibilidad actual
         try {
-            await req.product.update({
-                availability: newAvailability
-            });
-            res.send('Disponibilidad actualizada correctamente')
+            if (req.user && !req.customer && !req.deliveryMan) {
+                await req.product.update({
+                    availability: newAvailability
+                });
+                res.send('Disponibilidad actualizada correctamente')
+            return
+            }
+            const error = new Error('Usuario no valido');
+            res.status(409).json({error: error.message})
         } catch (error) {
             res.status(500).json({error: 'Hubo un Error'})
         }
@@ -136,10 +151,15 @@ export class productController {
     static changeOfferProduct = async (req:Request, res:Response) => {
         const newOffer = !req.product.dataValues.offer; 
         try {
-            await req.product.update({
-                offer: newOffer
-            });
-            res.send('Estado de oferta actualizada correctamente')
+            if (req.user && !req.customer && !req.deliveryMan) {
+                await req.product.update({
+                    offer: newOffer
+                });
+                res.send('Estado de oferta actualizada correctamente')
+                return
+            }
+            const error = new Error('Usuario no valido');
+            res.status(409).json({error: error.message})
         } catch (error) {
             res.status(500).json({error: 'Hubo un Error'})
         }

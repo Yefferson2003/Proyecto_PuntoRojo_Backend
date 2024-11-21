@@ -5,6 +5,8 @@ import router from './routes/index';
 import { corsConfig } from "./config/cors";
 import { Server } from 'socket.io';
 import http from 'http';
+import swaggerUi from 'swagger-ui-express'
+import swaggerSpec from './config/swagger'
 
 //** Conectar a la Base de datos **//
 connectDB();
@@ -40,5 +42,7 @@ io.on('connection', (socket) => {
 app.set('io', io);
 
 app.use('/api', router);
+
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerSpec) )
 
 export default httpServer;

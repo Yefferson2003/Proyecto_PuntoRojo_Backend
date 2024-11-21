@@ -97,7 +97,7 @@ export class deliveryManController {
     }
 
     static createDeliveryMan = async (req: Request, res: Response) => {
-        const {name, password, email, phone, rol = 'deliveryman'} = req.body
+        const {name, password, email, phone,identification, rol = 'deliveryman'} = req.body
         try {
 
             // Prevenir duplicados
@@ -126,7 +126,8 @@ export class deliveryManController {
 
             const deliveryMan = await DeliveryMan.create({
                 userId : user.id,
-                phone
+                phone,
+                identification
             })
 
             res.send('Repartidor creado correctamente')
