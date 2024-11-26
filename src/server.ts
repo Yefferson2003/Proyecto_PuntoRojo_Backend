@@ -33,14 +33,13 @@ const io = new Server(httpServer, {
 });
 
 // Manejo de eventos de Socket.IO
-// io.on('connection', (socket) => {
-//     console.log('Cliente conectado:', socket.id);
+io.on('connection', (socket) => {
+    console.log('Cliente conectado:', socket.id);
 
-//     socket.on('disconnect', () => {
-//         console.log('Cliente desconectado:', socket.id);
-//     });
-// });
-
+    socket.on('disconnect', () => {
+        console.log('Cliente desconectado:', socket.id);
+    });
+});
 
 app.set('io', io);
 
