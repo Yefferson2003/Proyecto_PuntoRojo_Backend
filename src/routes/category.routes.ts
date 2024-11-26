@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { body, param } from "express-validator";
-import { handleInputErrors, validateCategoryId, validateSubCategoryId } from "../middlewares/validation";
 import { categoryController } from "../controllers/categoryController";
-import { categoryExists, subCategoryExists } from "../middlewares/models";
 import { subcategoryController } from "../controllers/subcategoryController";
+import { categoryExists, subCategoryExists } from "../middlewares/models";
+import { validateIdParam, validateNameCategory } from "../middlewares/validation";
 
 const router = Router()
 /**
@@ -64,75 +63,62 @@ router.get('/',
 )
 
 router.get('/:categoryId', 
-    validateCategoryId,
-    handleInputErrors,
+    validateIdParam('categoryId'),
     categoryExists,
     categoryController.getCategoryById
 )
 
 router.post('/', 
-    body('name')
-        .notEmpty().withMessage('Nombre de la Categoria obligatorio'),
-    handleInputErrors,
+    validateNameCategory,
     categoryController.createCategory
 )
 
 router.put('/:categoryId', 
-    validateCategoryId,
-    body('name')
-        .notEmpty().withMessage('Nombre de la Categoria obligatorio'),
-    handleInputErrors,
+    validateIdParam('categoryId'),
+    validateNameCategory,
     categoryExists,
     categoryController.updateCategory
 )
 
 router.patch('/:categoryId/visibility', 
-    validateCategoryId,
-    handleInputErrors,
+    validateIdParam('categoryId'),
     categoryExists,
     categoryController.changeVisibility
 )
 // * Rutas de SubCategory*//
 router.get('/:categoryId/subcategories',
-    validateCategoryId,
-    handleInputErrors,
+    validateIdParam('categoryId'),
     categoryExists,
     subcategoryController.getSubCategories
 )
 
 router.get('/:categoryId/subcategories/:subCategoryId',
-    validateCategoryId,
-    validateSubCategoryId,
-    handleInputErrors,
+    validateIdParam('categoryId'),
+    validateIdParam('subCategoryId'),
     categoryExists,
     subCategoryExists,
     subcategoryController.getSubCategoryById
 )
 
 router.post('/:categoryId/subcategories',
-    validateCategoryId,
-    body('name')
-        .notEmpty().withMessage('Nombre de la SubCategoria obligatorio'),
-    handleInputErrors,
+    validateIdParam('categoryId'),
+    validateNameCategory,
     categoryExists,
     subcategoryController.createSubCategory
 )
 
 router.put('/:categoryId/subcategories/:subCategoryId',
-    validateCategoryId,
-    validateSubCategoryId,
-    body('name')
-        .notEmpty().withMessage('Nombre de la SubCategoria obligatorio'),
-    handleInputErrors,
+    validateIdParam('categoryId'),
+    validateIdParam('subCategoryId'),
+    validateNameCategory,
     categoryExists,
     subCategoryExists,
     subcategoryController.updateSubCategory
 )
 
 router.patch('/:categoryId/subcategories/:subCategoryId',
-    validateCategoryId,
-    validateSubCategoryId,
-    handleInputErrors,
+    validateIdParam('categoryId'),
+    validateIdParam('subCategoryId'),
     categoryExists,
     subCategoryExists,
     subcategoryController.changeVisibility

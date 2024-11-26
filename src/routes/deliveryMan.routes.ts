@@ -1,9 +1,8 @@
-import {  Router } from "express";
+import { Router } from "express";
 import { deliveryManController } from "../controllers/deliveryManController";
-import { body, param, query } from "express-validator";
-import { handleInputErrors, validateDeliveryManId, validateOrderId } from "../middlewares/validation";
 import { authenticate } from "../middlewares/auth";
 import { orderExists } from "../middlewares/models";
+import { validateDeliveryMan, validateIdParam, validateUpdateDeliveryMan } from "../middlewares/validation";
 
 const router = Router()
 /**
@@ -49,57 +48,22 @@ router.get('/',
 )
 
 router.get('/:deliveryManId/orders',
-    validateDeliveryManId,
-    handleInputErrors,
+    validateIdParam('deliveryManId'),
     deliveryManController.getDeliveryManById
 )
 
 router.post('/', 
-    query('availability')
-    .optional() 
-    .custom((value) => {
-        if (value !== 'true') {
-            throw new Error('El parámetro availability solo puede ser true');
-        }
-        return true;
-    }),
-    body('name')
-        .notEmpty().withMessage('El Nombre es obligatorio'),
-    body('identification')
-        .notEmpty().withMessage('La C.C. es obligatorio'),
-    body('password')
-        .isLength({min: 8}).withMessage('El password es muy corto, minimo 8 caracteres'),
-    body('password_confirmation')
-        .custom((value, {req}) => {
-            if (value !== req.body.password) {
-                throw new Error("Los password no son iguales");
-            }
-            return true
-        }),
-    body('email')
-        .isEmail().withMessage('Email no válido'),
-    body('phone')
-        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
-        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
-    handleInputErrors,
+    validateDeliveryMan,
     deliveryManController.createDeliveryMan
 )
 
 router.put('/update',
-    body('name')
-        .notEmpty().withMessage('El Nombre es obligatorio'),
-    body('identification')
-        .notEmpty().withMessage('La C.C. es obligatorio'),
-    body('phone')
-        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
-        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
-    handleInputErrors,
+    validateUpdateDeliveryMan,
     deliveryManController.updateDeliveryMan
 )
 
 router.patch('/:deliveryManId/status',
-    validateDeliveryManId,
-    handleInputErrors,
+    validateIdParam('deliveryManId'),
     deliveryManController.changeStatusDeliveryMan
 )
 
@@ -112,8 +76,7 @@ router.get('/orders',
 )
 
 router.get('/orders/:orderId',
-    validateOrderId,
-    handleInputErrors,
+    validateIdParam('orderId'),
     orderExists,
     deliveryManController.getOrdersByDeliveryManById
 )

@@ -80,7 +80,7 @@ export class productController {
     }
 
     static createProduct = async (req:Request, res:Response) => {
-            const { name, nit, description, imgUrl, availability, priceAfter, priceBefore, iva, offer, subCategoryId} = req.body
+        const { name, nit, description, imgUrl, availability, priceAfter, priceBefore, iva, offer, subCategoryId} = req.body
         try {
             if (req.user && !req.customer && !req.deliveryMan) {
                 const product = Product.create({

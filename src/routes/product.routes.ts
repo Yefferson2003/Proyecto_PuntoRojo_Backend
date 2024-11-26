@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { productController } from "../controllers/productController";
-import { query } from "express-validator";
-import { handleInputErrors, validateBodyProduct, validateProductId } from "../middlewares/validation";
 import { productExists } from "../middlewares/models";
+import { validateIdParam, validateProductBody } from "../middlewares/validation";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router()
@@ -128,8 +127,7 @@ router.get('',
  */
 
 router.get('/:productId',
-    validateProductId,
-    handleInputErrors,
+    validateIdParam('productId'),
     productExists,
     productController.getProductById
 )
@@ -214,8 +212,7 @@ router.get('/:productId',
 
 router.post('',
     authenticate,
-    validateBodyProduct,
-    handleInputErrors,
+    validateProductBody,
     productController.createProduct
 )
 /**
@@ -301,9 +298,8 @@ router.post('',
  */
 router.put('/:productId',
     authenticate,
-    validateProductId,
-    validateBodyProduct,
-    handleInputErrors,
+    validateIdParam('productId'),
+    validateProductBody,
     productExists,
     productController.updateProduct
 )
@@ -347,8 +343,8 @@ router.put('/:productId',
 
 router.patch('/:productId/availability',
     authenticate,
-    validateProductId,
-    handleInputErrors,
+    validateIdParam('productId'),
+    validateProductBody,
     productExists,
     productController.changeAvailabilityProduct
 )
@@ -392,8 +388,8 @@ router.patch('/:productId/availability',
 
 router.patch('/:productId/offer',
     authenticate,
-    validateProductId,
-    handleInputErrors,
+    validateIdParam('productId'),
+    validateProductBody,
     productExists,
     productController.changeOfferProduct
 )

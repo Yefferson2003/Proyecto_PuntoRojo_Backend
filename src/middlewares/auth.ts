@@ -1,10 +1,9 @@
-import {Response, Request, NextFunction} from 'express'
-import jwt from 'jsonwebtoken'
 import dotenv from "dotenv";
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import Customer from '../models/customer.model';
-import { where } from 'sequelize';
-import User from '../models/user.model';
 import DeliveryMan from '../models/deliveryMan.model';
+import User from '../models/user.model';
 dotenv.config()
 
 declare global { 

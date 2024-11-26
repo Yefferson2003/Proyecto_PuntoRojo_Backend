@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { orderController } from "../controllers/orderController";
-import { handleInputErrors, validateOrderId } from "../middlewares/validation";
-import { orderExists } from "../middlewares/models";
-import { body, query } from "express-validator";
 import { authenticate } from "../middlewares/auth";
+import { orderExists } from "../middlewares/models";
+import { validatedeliveryManId, validateIdParam, validateOrderBody, validateOrderDetailsBody, validateQueryParamsOrder } from "../middlewares/validation";
 
 const router = Router()
 
@@ -227,12 +226,7 @@ router.use(authenticate)
  */
 
 router.get('/',
-    query('status')
-        .optional().isIn(allowedStatus).withMessage('Estado Invalido'),
-    query('paymentMethod')
-        .optional().isIn(allowedPaymentMethod).withMessage('Metodo de Pago Invalido'),
-    query('deliveryType')
-        .optional().isIn(allowedDeliveryType).withMessage('Tipo de Entrega Invalido'),
+    validateQueryParamsOrder,
     orderController.getOrders
 )
 /**
@@ -346,8 +340,7 @@ router.get('/',
  */
 
 router.get('/:orderId',
-    validateOrderId,
-    handleInputErrors,
+    validateIdParam('orderId'),
     orderExists,
     orderController.getOrderById
 )
@@ -453,13 +446,7 @@ router.get('/:orderId',
  */
 
 router.post('/',
-    body('paymentMethod')
-        .notEmpty().withMessage('Método de pago obligatorio para la Orden'),
-    body('deliveryType')
-        .notEmpty().withMessage('Tipo de entrega obligatorio para la Orden'),
-    body('products')
-        .notEmpty().withMessage('Productos obligatorios para la Orden'),
-    handleInputErrors,
+    validateOrderBody,
     orderController.createOrder
 )
 /**
@@ -543,12 +530,8 @@ router.post('/',
  */
 
 router.patch('/:orderId/orderDetails',
-    validateOrderId,
-    body('productIds')
-        .notEmpty().withMessage('Productos obligatorios para la Orden'),
-    body('status')
-        .optional().isIn(allowedStatus).withMessage('Estado Invalido'),
-    handleInputErrors,
+    validateIdParam('orderId'),
+    validateOrderDetailsBody,
     orderExists,
     orderController.updateProductsOrder
 )
@@ -637,10 +620,8 @@ router.patch('/:orderId/orderDetails',
  */
 
 router.patch('/:orderId/deliveryMan',
-    validateOrderId,
-    body('deliveryManId')
-        .isInt().withMessage('Id no válido'),
-    handleInputErrors,
+    validateIdParam('orderId'),
+    validatedeliveryManId,
     orderExists,
     orderController.assignDeliveryMan
 )
@@ -709,10 +690,8 @@ router.patch('/:orderId/deliveryMan',
  */
 
 router.patch('/:orderId/status',
-    validateOrderId,
-    body('status')
-        .isIn(allowedStatus).withMessage('Estado Invalido'),
-    handleInputErrors,
+    validateIdParam('orderId'),
+    validateOrderDetailsBody,
     orderExists,
     orderController.changeStatus
 )

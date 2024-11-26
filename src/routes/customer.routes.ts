@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/auth";
 import { customerController } from "../controllers/customerController";
-import { handleInputErrors, validateOrderId } from "../middlewares/validation";
 import { orderExists } from "../middlewares/models";
+import { validateIdParam } from "../middlewares/validation";
 
 const router = Router()
 
@@ -64,8 +64,7 @@ router.get('/orders',
 
 router.get('/orders/:orderId',
     authenticate,
-    validateOrderId,
-    handleInputErrors,
+    validateIdParam('orderId'),
     orderExists,
     customerController.getOrdersByCustomerById
 )

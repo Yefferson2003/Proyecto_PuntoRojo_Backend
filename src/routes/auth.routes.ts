@@ -1,174 +1,14 @@
 import { Router } from "express";
 import { authController } from "../controllers/authController";
-import { body, param } from "express-validator";
-import { handleInputErrors } from "../middlewares/validation";
 import { authenticate } from "../middlewares/auth";
-
+import { validateCustomerBody, validateCustomerUpdate, validateEmailBody, validateLoginBody, validatepassword, validateTokenBody, validateUpdatePassword, validateUpdatePasswordAccountUpdate } from "../middlewares/validation";
 const clientType = ['natural', 'legal']
 
-const router = Router()
+const router = Router();
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         email:
- *           type: string
- *           format: email
- *           description: Email del usuario, único y en minúsculas
- *           example: "usuario@example.com"
- *         password:
- *           type: string
- *           description: Contraseña del usuario
- *           example: "passwordSeguro123"
- *         name:
- *           type: string
- *           description: Nombre del usuario
- *           example: "Juan Pérez"
- *         rol:
- *           type: string
- *           enum:
- *             - admin
- *             - user
- *             - deliveryman
- *           description: Rol del usuario
- *           example: "user"
- *         customer:
- *           $ref: '#/components/schemas/Customer'
- *           description: Relación con el modelo Customer
- *         deliveryMan:
- *           $ref: '#/components/schemas/DeliveryMan'
- *           description: Relación con el modelo DeliveryMan
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Token:
- *       type: object
- *       properties:
- *         token:
- *           type: string
- *           description: Token de autenticación
- *           example: "dGhpcyBpcyBhIHNhbXBsZSB0b2tlbg=="
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Fecha de creación del token
- *           example: "2024-11-19T23:54:00.000Z"
- *         expiresAt:
- *           type: string
- *           format: date-time
- *           description: Fecha de expiración del token
- *           example: "2024-11-20T23:54:00.000Z"
- *         customerId:
- *           type: integer
- *           description: ID del cliente asociado
- *           example: 1
- *         customer:
- *           $ref: '#/components/schemas/Customer'
- *           description: Relación con el modelo Customer
- */
-
-
-/**
- * @swagger
- * /api/auth/create-accouth/customer:
- *   post:
- *     summary: Crea una nueva cuenta de cliente
- *     tags: 
- *       - Autenticación
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Juan Pérez"
- *               password:
- *                 type: string
- *                 example: "password123"
- *               password_confirmation:
- *                 type: string
- *                 example: "password123"
- *               email:
- *                 type: string
- *                 example: "juan.perez@example.com"
- *               clietType:
- *                 type: string
- *                 example: "natural"
- *               identification:
- *                 type: string
- *                 example: "123456789"
- *               phone:
- *                 type: string
- *                 example: "3101234567"
- *               address:
- *                 type: string
- *                 example: "Calle Falsa 123"
- *     responses:
- *       200:
- *         description: Cuenta creada, revisa tu email para confirmarla
- *         content:
- *           application/json:
- *             schema:
- *               type: string
- *               example: 'Cuenta creada, revisa tu email para confirmarla'
- *       409:
- *         description: El usuario ya está registrado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: 'Cuenta deshabilitada'
- *       500:
- *         description: Hubo un error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: 'Error interno'
- */
 
 router.post('/create-accouth/customer', 
-    body('name')
-        .notEmpty().withMessage('El Nombre es obligatorio'),
-    body('password')
-        .isLength({min: 8}).withMessage('El password es muy corto, minimo 8 caracteres'),
-    body('password_confirmation')
-        .custom((value, {req}) => {
-            if (value !== req.body.password) {
-                throw new Error("Los password no son iguales");
-                
-            }
-            return true
-        }),
-    body('email')
-        .isEmail().withMessage('Email no válido'),
-    handleInputErrors,
-    body('clietType')
-        .isIn(clientType).withMessage('Tipo de cliente invalido'),
-    body('identification')
-        .notEmpty().withMessage('Número de identificación obligatorio'),
-    body('phone')
-        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
-        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
-    body('address')
-        .notEmpty().withMessage('La dirección es obligatoria '),
-    handleInputErrors,
+    validateCustomerBody,
     authController.createAccountCustomer
 )
 /**
@@ -231,9 +71,7 @@ router.post('/create-accouth/customer',
  */
 
 router.post('/confirm-accounth/customer',
-    body('token')
-        .notEmpty().withMessage('El Token es obligatorio'),
-    handleInputErrors,
+    validateTokenBody,
     authController.confirmAccountCustomer
 )
 /**
@@ -299,20 +137,16 @@ router.post('/confirm-accounth/customer',
  */
 
 router.post('/login',
-    body('email')
-        .isEmail().withMessage('Email no válido'),
-    body('password')
-        .notEmpty().withMessage('El password es obligatorio'),
-    handleInputErrors,
+    validateLoginBody,
     authController.login
 )
 
-router.post('/resquest-code',
-    body('email')
-        .isEmail().withMessage('Email no válido'),
-    handleInputErrors,
-    authController.requestConfirmationCode
-)
+// router.post('/resquest-code',
+//     body('email')
+//         .isEmail().withMessage('Email no válido'),
+//     handleInputErrors,
+//     authController.requestConfirmationCode
+// )
 /**
  * @swagger
  * /api/auth/forgot-password:
@@ -363,9 +197,7 @@ router.post('/resquest-code',
  */
 
 router.post('/forgot-password',
-    body('email')
-        .isEmail().withMessage('Email no válido'),
-    handleInputErrors,
+    validateEmailBody,
     authController.forgotPassword
 )
 /**
@@ -418,9 +250,7 @@ router.post('/forgot-password',
  */
 
 router.post('/validate-token',
-    body('token')
-    .notEmpty().withMessage('El Token es obligatorio'),
-    handleInputErrors,
+    validateTokenBody,
     authController.validateToken
 )
 /**
@@ -484,19 +314,7 @@ router.post('/validate-token',
  */
 
 router.post('/update-password/:token',
-    param('token')
-        .isNumeric().withMessage('Token no valido'),
-    body('password')
-        .isLength({min: 8}).withMessage('El password es muy corto, minimo 8 caracteres'),
-    body('password_confirmation')
-        .custom((value, {req}) => {
-            if (value !== req.body.password) {
-                throw new Error("Los password no son iguales");
-                
-            }
-            return true
-        }),
-    handleInputErrors,
+    validateUpdatePassword,
     authController.updatePassword
 )
 
@@ -504,44 +322,22 @@ router.get('/user',
     authenticate,
     authController.user
 )
+
 router.put('/customer/update',
     authenticate,
-    body('name')
-        .notEmpty().withMessage('El nombre es obligatorio'),
-    body('clietType')
-        .isIn(clientType).withMessage('Tipo de cliente invalido'),
-    body('identification')
-        .notEmpty().withMessage('La identificación es obligatoria'),
-    body('phone')
-        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
-        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
-    body('address')
-        .notEmpty().withMessage('La dirección es obligatoria'),
-    handleInputErrors,
+    validateCustomerUpdate,
     authController.updateCustomer
 )
 
 router.post('/validate-password',
     authenticate,
-    body('password')
-    .notEmpty().withMessage('El password es obligatorio'),
-    handleInputErrors,
+    validatepassword,
     authController.validatePassword
 )
 
 router.post('/update-password',
     authenticate,
-    body('password')
-        .isLength({min: 8}).withMessage('El password es muy corto, minimo 8 caracteres'),
-    body('password_confirmation')
-        .custom((value, {req}) => {
-            if (value !== req.body.password) {
-                throw new Error("Los password no son iguales");
-                
-            }
-            return true
-        }),
-    handleInputErrors,
+    validateUpdatePasswordAccountUpdate,
     authController.updatePasswordAccount
 )
 export default router
