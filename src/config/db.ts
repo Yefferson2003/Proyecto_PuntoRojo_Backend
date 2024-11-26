@@ -6,7 +6,7 @@ dotenv.config();
 
 const db = new Sequelize(process.env.DATABASE_URL!, {
     logging: false,
-    models: [__dirname + '/../models/**']
+    models: [__dirname + '/../models/**/*']
 }); // Conectando a la base de datos usando la librería 'Sequelize'.
 
 
