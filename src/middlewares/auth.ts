@@ -83,7 +83,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     } catch (error) {
         res.status(401).json({ error: 'Token no válido' });
         // console.log(error);
-        
         return
     }
 };

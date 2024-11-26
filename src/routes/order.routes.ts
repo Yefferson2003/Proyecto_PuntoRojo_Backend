@@ -107,6 +107,13 @@ const allowedStatus = ['inReview', 'pending', 'packaging', 'sending', 'ready', '
 const allowedPaymentMethod = ['counter-delivery', 'credit']
 const allowedDeliveryType = ['delivery', 'pickup']
 
+router.get('/data/chart',
+    orderController.getOrderByChart
+)
+router.get('/data/chart/details',
+    orderController.getOrderDetailsByChart
+)
+
 router.use(authenticate)
 /**
  * @swagger
@@ -709,6 +716,8 @@ router.patch('/:orderId/status',
     orderExists,
     orderController.changeStatus
 )
+
+
 
 
 

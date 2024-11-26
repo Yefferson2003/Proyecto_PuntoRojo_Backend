@@ -29,11 +29,10 @@ function filterOrdersFromLastTwoDaysCondition() {
 export class customerController {
     static getOrdersByCustomer = async (req:Request, res:Response) => {
         const {overToday, page = 1, limit = 10} = req.query
-        
         try {
             if (!req.customer) {
                 const error = new Error('Usuario no valido');
-                res.status(409).json({error: error.message})
+                res.status(401).json({error: error.message})
                 return
             }
 
@@ -53,6 +52,7 @@ export class customerController {
             const offset = (pageNumber - 1) * limitNumber;
 
             const {count, rows: orders} = await Order.findAndCountAll({
+                distinct: true,
                 attributes: ['id', 'paymentMethod', 'deliveryType', 'status', 'address', 'createdAt', 'completedAt'],
                 where: filter,
                 include:[
@@ -111,7 +111,7 @@ export class customerController {
 
             const order = await Order.findOne({
                 where: {id: req.order.id},
-                attributes: ['id', 'paymentMethod', 'deliveryType', 'address', 'createdAt', 'completedAt', 'status'],
+                attributes: ['id', 'paymentMethod', 'deliveryType', 'address', 'createdAt', 'completedAt', 'status', 'deliveryManId'],
                 include: [
                     {
                         model: OrderDetails,

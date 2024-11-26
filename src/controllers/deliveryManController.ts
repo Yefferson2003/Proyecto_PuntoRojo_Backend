@@ -6,6 +6,24 @@ import Order from '../models/order.model'
 import Customer from '../models/customer.model'
 import OrderDetails from '../models/orderDetails.model.'
 import Product from '../models/product.model'
+import { Op } from 'sequelize'
+
+function filterOrdersFromLastTwoDaysCondition() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999) 
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1); 
+
+    return {
+        createdAt: {
+            [Op.between]: [yesterday, endOfToday]
+        }
+    };
+}
 
 export class deliveryManController {
 
@@ -50,13 +68,13 @@ export class deliveryManController {
         try {
 
             const { count, rows: orders } = await Order.findAndCountAll({
-                attributes: ['id', 'createdAt', 'deliveryType', 'paymentMethod', 'status', 'address',],
+                // attributes: ['id', 'createdAt', 'deliveryType', 'paymentMethod', 'status', 'address',],
                 where: {deliveryManId},
                 include: [
                     {
                         model: Customer,
                         as: 'customer',
-                        attributes: ['id', 'phone', 'identification', 'clietType'],
+                        // attributes: ['id', 'phone', 'identification', 'clietType'],
                         include: [
                             {
                                 model: User,
@@ -68,7 +86,7 @@ export class deliveryManController {
                     {
                         model: OrderDetails,
                         as: 'orderDetails',
-                        attributes: ['quantity'],
+                        // attributes: ['quantity'],
                         include: [
                             {
                                 model: Product,
@@ -138,6 +156,31 @@ export class deliveryManController {
         }
     }
 
+    static updateDeliveryMan = async (req: Request, res: Response) => {
+        const {name, phone, identification} = req.body
+        try {
+            if (!req.deliveryMan) {
+                const error = new Error('No autorizado')
+                res.status(401).json({error: error.message})
+                return
+            }
+
+            await req.user.update({
+                name
+            })
+
+            await req.deliveryMan.update({
+                phone,
+                identification
+            })
+
+            res.send('Repartidor actualizado correctamente')
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
     static changeStatusDeliveryMan = async (req: Request, res: Response) => {
         const {deliveryManId} = req.params
         try {
@@ -174,4 +217,140 @@ export class deliveryManController {
             res.status(500).json({error: 'Hubo un error'})
         }
     }
+
+    static changeAvailabilityDeliveryMan = async (req: Request, res: Response) => {
+        try {
+            if (!req.deliveryMan) {
+                const error = new Error('No autorizado')
+                res.status(401).json({error: error.message})
+                return
+            }
+
+            await req.deliveryMan.update({
+                availability: !req.deliveryMan.dataValues.availability
+            })
+
+            req.app.get('io').emit('changeAvailabilityDeliveryMan');
+
+            res.status(200).send('Disponibilidad actualizada correctamente')
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
+    static getOrdesByDeliveryMan = async (req: Request, res: Response) => {
+        const {overToday, page = 1, limit = 10} = req.query
+        try {
+            if (!req.deliveryMan) {
+                const error = new Error('No autorizado')
+                res.status(401).json({error: error.message})
+                return
+            }
+
+            let filter : any = {}
+
+            if (overToday) {
+                filter = { ...filterOrdersFromLastTwoDaysCondition() }
+                filter.status = {
+                    [Op.notIn]: ['completed', 'cancel']
+                }
+            }else{
+                filter.status = {
+                    [Op.and]: [
+                        { [Op.eq]: 'completed' }, 
+                        { [Op.ne]: 'cancel' }    
+                    ]
+                };
+            }
+
+            // Convertir a números y definir `offset` y `limit`
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const offset = (pageNumber - 1) * limitNumber;
+
+            const {count, rows: orders} = await Order.findAndCountAll({
+                distinct: true,
+                where: {
+                    deliveryManId: req.deliveryMan.id,
+                    ...filter,
+                },
+                include: [
+                    {
+                        model: Customer,
+                        as: 'customer',
+                        include: [
+                            {
+                                model: User,
+                                as: 'user',
+                                attributes: {exclude: ['password']}
+                            }
+                        ]
+                    },
+                    {
+                        model: OrderDetails,
+                        as: 'orderDetails',
+                        attributes: ['id', 'quantity'],
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                attributes: ['id', 'priceAfter']
+                            }
+                        ]
+                    }
+                ],
+                order: [['id', 'ASC']],
+                limit: limitNumber,
+                offset,
+            })
+            res.json({
+                total: count,
+                orders,
+                totalPages: Math.ceil(count / limitNumber),
+                currentPage: pageNumber,
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
+    static getOrdersByDeliveryManById = async (req:Request, res:Response) => {
+        try {
+            if (!req.deliveryMan) {
+                const error = new Error('Usuario no valido');
+                res.status(409).json({error: error.message})
+                return
+            }
+            if (req.deliveryMan.id !== req.order.dataValues.deliveryManId) {
+                const error = new Error('Acción no valida');
+                res.status(409).json({error: error.message})
+                return
+            }
+
+            const order = await Order.findOne({
+                where: {id: req.order.id},
+                attributes: ['id', 'paymentMethod', 'deliveryType', 'address', 'createdAt', 'completedAt', 'status', 'deliveryManId'],
+                include: [
+                    {
+                        model: OrderDetails,
+                        as: 'orderDetails',
+                        attributes: ['id', 'quantity'],
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                            }
+                        ]
+                    }
+                ]
+            })
+            res.json(order)
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({error: 'Hubo un Error'})
+        }
+    }
+
 }

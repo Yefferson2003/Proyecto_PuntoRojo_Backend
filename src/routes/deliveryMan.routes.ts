@@ -1,8 +1,9 @@
 import {  Router } from "express";
 import { deliveryManController } from "../controllers/deliveryManController";
 import { body, param, query } from "express-validator";
-import { handleInputErrors, validateDeliveryManId } from "../middlewares/validation";
+import { handleInputErrors, validateDeliveryManId, validateOrderId } from "../middlewares/validation";
 import { authenticate } from "../middlewares/auth";
+import { orderExists } from "../middlewares/models";
 
 const router = Router()
 /**
@@ -77,14 +78,44 @@ router.post('/',
         }),
     body('email')
         .isEmail().withMessage('Email no válido'),
+    body('phone')
+        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
+        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
     handleInputErrors,
     deliveryManController.createDeliveryMan
+)
+
+router.put('/update',
+    body('name')
+        .notEmpty().withMessage('El Nombre es obligatorio'),
+    body('identification')
+        .notEmpty().withMessage('La C.C. es obligatorio'),
+    body('phone')
+        .isLength({max: 10, min: 10}).withMessage('El número télefonico debe tener 10 digitos')
+        .isNumeric().withMessage('El número telefónico solo debe contener dígitos'),
+    handleInputErrors,
+    deliveryManController.updateDeliveryMan
 )
 
 router.patch('/:deliveryManId/status',
     validateDeliveryManId,
     handleInputErrors,
     deliveryManController.changeStatusDeliveryMan
+)
+
+router.patch('/availability',
+    deliveryManController.changeAvailabilityDeliveryMan
+)
+
+router.get('/orders',
+    deliveryManController.getOrdesByDeliveryMan
+)
+
+router.get('/orders/:orderId',
+    validateOrderId,
+    handleInputErrors,
+    orderExists,
+    deliveryManController.getOrdersByDeliveryManById
 )
 
 export default router
