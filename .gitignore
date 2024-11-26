@@ -8,7 +8,7 @@ node_modules/
 package-lock.json
 
 # Archivos de configuración de TypeScript
-tsconfig.json
+# tsconfig.json
 
 # Otros archivos que deseas ignorar
 *.log
