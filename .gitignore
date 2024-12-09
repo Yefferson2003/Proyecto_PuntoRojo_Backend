@@ -1,0 +1,10 @@
+# Node modules
+node_modules/
+
+# Archivos de configuración
+.env
+
+
+# Otros archivos que deseas ignorar
+*.log
+dist/
